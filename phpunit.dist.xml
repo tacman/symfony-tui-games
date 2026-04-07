@@ -7,7 +7,7 @@
          failOnDeprecation="true"
          failOnNotice="true"
          failOnWarning="true"
-         bootstrap="tests/bootstrap.php"
+         bootstrap="vendor/autoload.php"
          cacheDirectory=".phpunit.cache"
 >
     <php>
