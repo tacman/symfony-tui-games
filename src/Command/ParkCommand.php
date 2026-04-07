@@ -9,6 +9,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Tui\Style\Align;
+use Symfony\Component\Tui\Style\Border;
+use Symfony\Component\Tui\Style\BorderPattern;
 use Symfony\Component\Tui\Style\Style;
 use Symfony\Component\Tui\Style\StyleSheet;
 use Symfony\Component\Tui\Style\VerticalAlign;
@@ -23,6 +25,15 @@ final class ParkCommand
             ':root' => new Style(
                 align: Align::Center,
                 verticalAlign: VerticalAlign::Center,
+            ),
+            ParkWidget::class => new Style(
+                maxColumns: ParkWidget::INNER_W + 2,
+                border: Border::from([1], BorderPattern::ROUNDED, 'yellow'),
+                dim: true,
+            ),
+            ParkWidget::class.':focus' => new Style(
+                border: Border::from([1], BorderPattern::ROUNDED, 'bright_yellow'),
+                dim: false,
             ),
         ]);
 

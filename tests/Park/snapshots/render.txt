@@ -1,0 +1,25 @@
+            
+            
+            
+            ╭───────────────────────────────────────────────────────────────╮
+            │                                             TERMINAL PARK     │
+            │                                                               │
+            │                                          $ Money    : $2,000  │
+            │                                          @ Visitors : 0       │
+            │                                          ~ Happiness: 100%    │
+            │                                          + Revenue  : $0      │
+            │                                                               │
+            │                                          BUILD :              │
+            │                                          [1] Path          $10│
+            │                                          [2] Coaster      $500│
+            │                                          [3] Food Stall   $200│
+            │                                          [4] Toilets      $150│
+            │                                          [D] Demolish         │
+            │                    >>                                         │
+            │───────────────────────────────────────────────────────────────│
+            │(10,12) Grass  Build a path from >> to attract visitors!       │
+            │WASD/↑↓←→  E:Build  X:Demo  1-4/D:Mode  P:Pause  Q:Quit        │
+            ╰───────────────────────────────────────────────────────────────╯
+            
+            
+            

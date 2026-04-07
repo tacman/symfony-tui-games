@@ -2,8 +2,10 @@
 
 namespace App\Park;
 
+use Symfony\Component\Tui\Ansi\AnsiUtils;
 use Symfony\Component\Tui\Input\Key;
 use Symfony\Component\Tui\Render\RenderContext;
+use Symfony\Component\Tui\Style\Style;
 use Symfony\Component\Tui\Widget\AbstractWidget;
 use Symfony\Component\Tui\Widget\FocusableInterface;
 use Symfony\Component\Tui\Widget\FocusableTrait;
@@ -15,12 +17,14 @@ use Symfony\Component\Tui\Widget\WidgetContext;
 /**
  * Full-screen park management widget.
  *
- * Layout (visible widths):
- *   map area : MAP_COLS * 2 + 2 = 42 cols
- *   gap      : 1 col
- *   info panel : 24 cols
- *   total    : 67 cols
- *   height   : MAP_ROWS + 2 (map border) + 1 (status bar) = 17 rows
+ * Layout (inner visible widths):
+ *   map area  : MAP_COLS * 2 = 40 cols
+ *   separator : 1 col
+ *   info panel: INFO_W = 22 cols
+ *   total     : INNER_W = 63 cols
+ *   height    : MAP_ROWS (14) + separator (1) + event (1) + hint (1) = 17 rows
+ *
+ * The outer border (╭╮╯╰) is provided by the StyleSheet in ParkCommand.
  */
 class ParkWidget extends AbstractWidget implements FocusableInterface
 {
@@ -29,15 +33,57 @@ class ParkWidget extends AbstractWidget implements FocusableInterface
     use QuitableTrait;
     use ScheduledTickTrait;
 
-    private const R = "\033[0m";
-    private const DIM = "\033[2m";
-    private const BOLD = "\033[1m";
+    /** Width of the info panel content (no border). */
+    public const INFO_W = 22;
 
-    // Info panel inner width (between ║ borders)
-    private const INFO_W = 22;
+    /** Total inner content width: map (MAP_COLS*2) + separator (1) + info (INFO_W). */
+    public const INNER_W = ParkGame::MAP_COLS * 2 + 1 + self::INFO_W;
+
+    private readonly Style $styleBold;
+    private readonly Style $styleDim;
+    private readonly Style $styleMoney;
+    private readonly Style $styleVisitors;
+    private readonly Style $styleHappyGood;
+    private readonly Style $styleHappyMid;
+    private readonly Style $styleHappyBad;
+    private readonly Style $styleRevenue;
+    private readonly Style $styleSelected;
+    private readonly Style $styleError;
+    private readonly Style $styleCursorBuild;
+    private readonly Style $styleCursorDemolish;
+    private readonly Style $styleVisitor;
+
+    /** @var array<string, Style> */
+    private readonly array $tileStyles;
 
     public function __construct(private readonly ParkGame $game)
     {
+        $this->styleBold = new Style(bold: true);
+        $this->styleDim = new Style(dim: true);
+        $this->styleMoney = new Style(color: 'bright_yellow');
+        $this->styleVisitors = new Style(color: 'bright_cyan');
+        $this->styleHappyGood = new Style(color: 'green');
+        $this->styleHappyMid = new Style(color: 'yellow');
+        $this->styleHappyBad = new Style(color: 'red');
+        $this->styleRevenue = new Style(color: 'green');
+        $this->styleSelected = new Style(color: 'bright_green', bold: true);
+        $this->styleError = new Style(color: 'bright_red');
+        $this->styleCursorBuild = new Style(background: 'white', color: 'black');
+        $this->styleCursorDemolish = new Style(background: 'red', color: 'bright_white');
+        $this->styleVisitor = new Style(color: 'bright_white', bold: true);
+
+        $tileStyles = [];
+        foreach (TileType::cases() as $tile) {
+            $tileStyles[$tile->name] = match ($tile) {
+                TileType::Grass => new Style(color: 'green'),
+                TileType::Path => new Style(color: 'bright_black'),
+                TileType::Entrance => new Style(color: 'bright_yellow', bold: true),
+                TileType::Coaster => new Style(color: 'bright_blue', bold: true),
+                TileType::FoodStall => new Style(color: 'yellow', bold: true),
+                TileType::Toilet => new Style(color: 'bright_cyan', bold: true),
+            };
+        }
+        $this->tileStyles = $tileStyles;
     }
 
     // -------------------------------------------------------------------------
@@ -57,7 +103,7 @@ class ParkWidget extends AbstractWidget implements FocusableInterface
             'mode_coaster' => ['2'],
             'mode_food' => ['3'],
             'mode_toilet' => ['4'],
-            'mode_demolish' => ['D', 'd'],  // 'd' also moves cursor left, but D (shift) = demolish mode
+            'mode_demolish' => ['D', 'd'],
             'pause' => ['p', Key::SPACE],
             'quit' => [Key::ctrl('c'), 'q'],
         ];
@@ -133,10 +179,10 @@ class ParkWidget extends AbstractWidget implements FocusableInterface
     {
         $COLS = ParkGame::MAP_COLS;
         $ROWS = ParkGame::MAP_ROWS;
-        $minWidth = $COLS * 2 + 2 + 1 + self::INFO_W + 2; // 67
+        $innerW = self::INNER_W;
 
-        if ($context->getColumns() < $minWidth) {
-            return ["\033[31mTerminal too small! ({$minWidth} columns minimum)\033[0m"];
+        if ($context->getColumns() < $innerW) {
+            return [$this->styleError->apply("Terminal too small! ({$innerW} columns minimum)")];
         }
 
         // Visitor positions map [y][x] => count
@@ -151,29 +197,22 @@ class ParkWidget extends AbstractWidget implements FocusableInterface
 
         $lines = [];
 
-        // Row 0: top borders
-        $mapTop = self::DIM.'╔'.str_repeat('══', $COLS).'╗'.self::R;
-        $lines[] = $mapTop.' '.$infoLines[0];
-
-        // Rows 1..MAP_ROWS: map content + info content
+        // MAP_ROWS content rows: map (40) + separator (1) + info (22) = 63
         for ($y = 0; $y < $ROWS; ++$y) {
-            $row = self::DIM.'║'.self::R;
+            $row = '';
             for ($x = 0; $x < $COLS; ++$x) {
                 $tile = $this->game->getTileAt($x, $y);
                 $isCursor = ($x === $cx && $y === $cy);
                 $vCount = $vmap[$y][$x] ?? 0;
                 $row .= $this->renderCell($tile, $isCursor, $vCount);
             }
-            $row .= self::DIM.'║'.self::R;
-            $lines[] = $row.' '.$infoLines[$y + 1];
+            $lines[] = $row.' '.$infoLines[$y];
         }
 
-        // Row MAP_ROWS+1: bottom borders
-        $mapBottom = self::DIM.'╚'.str_repeat('══', $COLS).'╝'.self::R;
-        $lines[] = $mapBottom.' '.$infoLines[$ROWS + 1];
-
-        // Status bar
-        $lines[] = $this->buildStatusBar($minWidth);
+        // Separator + two status lines — each always exactly INNER_W wide
+        $lines[] = $this->styleDim->apply(str_repeat('─', $innerW));
+        $lines[] = $this->buildEventLine($innerW);
+        $lines[] = $this->buildHintLine($innerW);
 
         return $lines;
     }
@@ -183,22 +222,22 @@ class ParkWidget extends AbstractWidget implements FocusableInterface
         $char = $visitorCount >= 2 ? '@@' : (1 === $visitorCount ? '@ ' : $tile->chars());
 
         if ($isCursor) {
-            $bg = BuildMode::Demolish === $this->game->getBuildMode()
-                ? "\033[41;97m"   // red bg + white text = demolish cursor
-                : "\033[47;30m";  // white bg + black text = build cursor
+            $style = BuildMode::Demolish === $this->game->getBuildMode()
+                ? $this->styleCursorDemolish
+                : $this->styleCursorBuild;
 
-            return $bg.$char.self::R;
+            return $style->apply($char);
         }
 
         if ($visitorCount > 0) {
-            return "\033[97;1m".$char.self::R;
+            return $this->styleVisitor->apply($char);
         }
 
-        return $tile->ansi().$char.self::R;
+        return $this->tileStyles[$tile->name]->apply($char);
     }
 
     /**
-     * Returns exactly MAP_ROWS + 2 strings, each with visible width INFO_W + 2 = 24.
+     * Returns exactly MAP_ROWS = 14 lines, each with visible width INFO_W = 22.
      *
      * @return string[]
      */
@@ -208,67 +247,76 @@ class ParkWidget extends AbstractWidget implements FocusableInterface
         $game = $this->game;
         $mode = $game->getBuildMode();
 
-        // Helpers
         $pad = static fn (string $s): string => mb_str_pad($s, $W);
-        $row = static fn (string $text, string $ansi = ''): string => '║'.($ansi ? $ansi.$text."\033[0m" : $text).'║';
 
         $money = '$'.number_format($game->getMoney());
         $visitors = $game->getVisitorCount();
         $happy = $game->getAverageHappiness();
         $revenue = '$'.number_format($game->getTotalRevenue());
 
-        $happyAnsi = $happy >= 70 ? "\033[32m" : ($happy >= 40 ? "\033[33m" : "\033[31m");
+        $happyStyle = $happy >= 70 ? $this->styleHappyGood : ($happy >= 40 ? $this->styleHappyMid : $this->styleHappyBad);
 
         $pauseLabel = $game->isPaused() ? ' [PAUSE]' : '';
-
         $title = 'TERMINAL PARK'.$pauseLabel;
         $titleLen = mb_strlen($title);
         $leftPad = (int) (($W - $titleLen) / 2);
         $rightPad = $W - $titleLen - $leftPad;
-        $titleRow = '║'.self::BOLD.str_repeat(' ', $leftPad).$title.str_repeat(' ', $rightPad).self::R.'║';
 
         $lines = [];
-        $lines[] = '╔'.str_repeat('═', $W).'╗';          // row 0: top border
-        $lines[] = $titleRow;                              // row 1: title
-        $lines[] = $row($pad(''));                         // row 2: separator
-        $lines[] = $row($pad(" \$ Money    : $money"), "\033[93m");
-        $lines[] = $row($pad(" @ Visitors : $visitors"), "\033[96m");
-        $lines[] = $row($pad(" ~ Happiness: {$happy}%"), $happyAnsi);
-        $lines[] = $row($pad(" + Revenue  : $revenue"), "\033[32m");
-        $lines[] = $row($pad(''));                         // separator
-        $lines[] = $row($pad(' BUILD :'), self::BOLD);
-        foreach (BuildMode::cases() as $m) {
+        $lines[] = $this->styleBold->apply(str_repeat(' ', $leftPad).$title.str_repeat(' ', $rightPad)); // row 0
+        $lines[] = $pad('');                                                                              // row 1
+        $lines[] = $this->styleMoney->apply($pad(" \$ Money    : $money"));                              // row 2
+        $lines[] = $this->styleVisitors->apply($pad(" @ Visitors : $visitors"));                         // row 3
+        $lines[] = $happyStyle->apply($pad(" ~ Happiness: {$happy}%"));                                  // row 4
+        $lines[] = $this->styleRevenue->apply($pad(" + Revenue  : $revenue"));                           // row 5
+        $lines[] = $pad('');                                                                              // row 6
+        $lines[] = $this->styleBold->apply($pad(' BUILD :'));                                             // row 7
+        foreach (BuildMode::cases() as $m) {                                                             // rows 8–12
             $cost = null !== $m->cost() ? ' $'.$m->cost() : '';
             $label = " [{$m->shortKey()}] {$m->label()}";
             $plain = mb_str_pad($label, $W - mb_strlen($cost)).$cost;
-            $isSelected = ($m === $mode);
-            $lines[] = $row($plain, $isSelected ? "\033[1;32m" : '');
+            $lines[] = ($m === $mode) ? $this->styleSelected->apply($plain) : $plain;
         }
-        $lines[] = $row($pad(''));                         // separator
-        $lines[] = '╚'.str_repeat('═', $W).'╝';          // bottom border
+        $lines[] = $pad('');                                                                              // row 13
 
-        // Exactly MAP_ROWS + 2 = 16 lines
+        // Exactly MAP_ROWS = 14 lines
         return $lines;
     }
 
-    private function buildStatusBar(int $totalWidth): string
+    /**
+     * Coords + last event, always padded to exactly $width visible chars.
+     */
+    private function buildEventLine(int $width): string
     {
         $cx = $this->game->getCursorX();
         $cy = $this->game->getCursorY();
         $tile = $this->game->getTileAt($cx, $cy);
         $event = $this->game->getLastEvent();
 
-        $left = self::BOLD."({$cx},{$cy}) {$tile->label()}".self::R
-            .'  '.self::DIM.$event.self::R;
+        $coordLabel = "({$cx},{$cy}) {$tile->label()}";
+        $coordLen = AnsiUtils::visibleWidth($coordLabel);
 
-        $hint = self::DIM.'↑↓←→·WASD  [Entr] Place  [X] Demo  [1-4/D] Mode  [P] Pause  [Q] Quit'.self::R;
+        // Fit event message within remaining space after the "  " prefix
+        $maxEventLen = max(0, $width - $coordLen - 2);
+        if (AnsiUtils::visibleWidth($event) > $maxEventLen) {
+            $event = AnsiUtils::truncateToWidth($event, $maxEventLen, '');
+        }
 
-        // Visible lengths
-        $leftVis = mb_strlen("({$cx},{$cy}) {$tile->label()}  $event");
-        $hintVis = mb_strlen('↑↓←→·WASD  [Entr] Place  [X] Demo  [1-4/D] Mode  [P] Pause  [Q] Quit');
+        $eventText = "  {$event}";
+        $usedWidth = $coordLen + AnsiUtils::visibleWidth($eventText);
 
-        $padding = max(1, $totalWidth - $leftVis - $hintVis);
+        return $this->styleBold->apply($coordLabel)
+            .$this->styleDim->apply($eventText)
+            .str_repeat(' ', max(0, $width - $usedWidth));
+    }
 
-        return $left.str_repeat(' ', $padding).$hint;
+    /**
+     * Key hints, always exactly $width visible chars wide.
+     */
+    private function buildHintLine(int $width): string
+    {
+        $hint = 'WASD/↑↓←→  E:Build  X:Demo  1-4/D:Mode  P:Pause  Q:Quit';
+
+        return $this->styleDim->apply(mb_str_pad($hint, $width));
     }
 }
