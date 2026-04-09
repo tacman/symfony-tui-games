@@ -105,14 +105,7 @@ $w = AnsiUtils::visibleWidth($style->apply($text));  // strips codes, counts col
 
 ## Submodule dependencies
 
-This project vendors two experimental Symfony components via Git submodules:
-
-| Submodule | Package(s) | Source |
-|-----------|-----------|--------|
-| `vendor-src/symfony/tui` | `symfony/tui` | `fabpot/symfony` branch `tui` |
-| `vendor-src/symfony/nicolas-grekas` | `symfony/console`, `symfony/dependency-injection` | [symfony/symfony#63715](https://github.com/symfony/symfony/pull/63715) |
-
-Neither is available on Packagist yet; both are loaded via `path` repositories in `composer.json`.
+`symfony/tui` is not on Packagist and is vendored via a Git submodule (`vendor-src/symfony/tui`, from `fabpot/symfony` branch `tui`), loaded via a `path` repository in `composer.json`.
 
 To update TUI to the latest commit:
 

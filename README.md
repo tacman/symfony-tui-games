@@ -7,11 +7,8 @@ borders, compositing, keybindings, tick loops — so the project doubles as a
 living, playable reference for the component.
 
 > [!WARNING]
-> This project depends on two experimental Symfony components that are not yet on Packagist:
->
-> - **`symfony/tui`** — pending review, tracked via `vendor-src/symfony/tui` (submodule of `fabpot/symfony` branch `tui`)
-> - **`symfony/console` + `symfony/dependency-injection`** with `ConsoleBundle` and pure DI kernel — from [symfony/symfony#63715](https://github.com/symfony/symfony/pull/63715), tracked via `vendor-src/symfony/nicolas-grekas`
->
+> This project depends on **`symfony/tui`**, an experimental component not yet on Packagist.
+> It is tracked via `vendor-src/symfony/tui` (submodule of `fabpot/symfony` branch `tui`).
 > Follow the setup instructions below to get started.
 
 ---
@@ -25,17 +22,16 @@ living, playable reference for the component.
 ## Installation
 
 ```bash
-# Clone this repository with its submodules
+# Clone this repository with its submodule
 git clone --recurse-submodules https://github.com/GromNaN/symfony-tui-games.git symfony-tui-games
 cd symfony-tui-games
 
-# Install dependencies (TUI and ConsoleBundle are loaded from vendor-src/ via path repositories)
+# Install dependencies (symfony/tui is loaded from vendor-src/ via a path repository)
 composer install
 ```
 
 > If you cloned without `--recurse-submodules`, run
 > `git submodule update --init` before `composer install`.
-> The `composer install` / `composer update` scripts run this automatically.
 
 ---
 
