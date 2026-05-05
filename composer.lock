@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2eb0d90ebbfa247a3c0e3b9b8943dde6",
+    "content-hash": "8c298b99e0a3235103604325b462aace",
     "packages": [
         {
             "name": "psr/clock",
@@ -313,12 +313,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
-                "reference": "0949847ea962faf4c240e6dfa76e05647a9a954b"
+                "reference": "3525895fe677e4a325deec4e4ba0796a4d17b26e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/config/zipball/0949847ea962faf4c240e6dfa76e05647a9a954b",
-                "reference": "0949847ea962faf4c240e6dfa76e05647a9a954b",
+                "url": "https://api.github.com/repos/symfony/config/zipball/3525895fe677e4a325deec4e4ba0796a4d17b26e",
+                "reference": "3525895fe677e4a325deec4e4ba0796a4d17b26e",
                 "shasum": ""
             },
             "require": {
@@ -384,7 +384,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-29T15:16:51+00:00"
+            "time": "2026-05-04T13:43:27+00:00"
         },
         {
             "name": "symfony/console",
@@ -392,12 +392,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "7a7ad07175ceb2bb48954dfe1559804ad6ccd24b"
+                "reference": "5f38839ecea69f003d69ab376ac2b83cc71710ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/7a7ad07175ceb2bb48954dfe1559804ad6ccd24b",
-                "reference": "7a7ad07175ceb2bb48954dfe1559804ad6ccd24b",
+                "url": "https://api.github.com/repos/symfony/console/zipball/5f38839ecea69f003d69ab376ac2b83cc71710ae",
+                "reference": "5f38839ecea69f003d69ab376ac2b83cc71710ae",
                 "shasum": ""
             },
             "require": {
@@ -484,7 +484,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-30T13:24:58+00:00"
+            "time": "2026-05-04T15:13:47+00:00"
         },
         {
             "name": "symfony/dependency-injection",
@@ -804,12 +804,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "d1ec4543d5c6c2dac78503c2fae5ea0b3608ce40"
+                "reference": "5f0d8cd5c9d398fc5d1d2355144e1baf94b50fcf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/d1ec4543d5c6c2dac78503c2fae5ea0b3608ce40",
-                "reference": "d1ec4543d5c6c2dac78503c2fae5ea0b3608ce40",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/5f0d8cd5c9d398fc5d1d2355144e1baf94b50fcf",
+                "reference": "5f0d8cd5c9d398fc5d1d2355144e1baf94b50fcf",
                 "shasum": ""
             },
             "require": {
@@ -867,6 +867,93 @@
                 }
             ],
             "time": "2026-04-18T13:51:42+00:00"
+        },
+        {
+            "name": "symfony/polyfill-deepclone",
+            "version": "v1.37.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-deepclone.git",
+                "reference": "2ca9e9e75ead5174f2b44613a646bdc9338b8eb4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-deepclone/zipball/2ca9e9e75ead5174f2b44613a646bdc9338b8eb4",
+                "reference": "2ca9e9e75ead5174f2b44613a646bdc9338b8eb4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "provide": {
+                "ext-deepclone": "*"
+            },
+            "suggest": {
+                "ext-deepclone": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\DeepClone\\": ""
+                },
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for the deepclone extension",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "deepclone",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-deepclone/tree/v1.37.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-04-18T13:52:23+00:00"
         },
         {
             "name": "symfony/polyfill-deepclone",
@@ -1385,12 +1472,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "ae9488f874d7603f9d2dfbf120203882b645d963"
+                "reference": "0d4a029a9aac902aef699d1b56b2a9af8307139c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/ae9488f874d7603f9d2dfbf120203882b645d963",
-                "reference": "ae9488f874d7603f9d2dfbf120203882b645d963",
+                "url": "https://api.github.com/repos/symfony/string/zipball/0d4a029a9aac902aef699d1b56b2a9af8307139c",
+                "reference": "0d4a029a9aac902aef699d1b56b2a9af8307139c",
                 "shasum": ""
             },
             "require": {
@@ -1467,7 +1554,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-30T15:14:47+00:00"
+            "time": "2026-04-18T13:52:23+00:00"
         },
         {
             "name": "symfony/tui",
